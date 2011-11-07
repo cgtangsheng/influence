@@ -4,17 +4,15 @@ import java.io.IOException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.client.Scan;
+import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
 import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
-
-
 
 public class NpiInfluenceJob {
 	private static int iteration = 0;
-    private static Configuration conf= HBaseConfiguration.create();
-	public static void main(String[] args) throws Exception {
+    public static void main(String[] args) throws Exception {
+    	Configuration conf= HBaseConfiguration.create();
 		iteration=Integer.parseInt(args[1]);
 		if (args.length != 2) {
 			System.err.println("Wrong number of arguments: " + args.length);
@@ -24,13 +22,13 @@ public class NpiInfluenceJob {
 		}
 		else {			
 			for(int i=0;i<iteration;i++){
-				Job job = configureJob(args[0],i);
+				Job job = configureJob(conf,args[0],i);
 				if(!job.waitForCompletion(true))
 					break;
 			}
 		}
 	}
-	private static Job configureJob(String tableName,int i) throws IOException {
+	private static Job configureJob(Configuration conf,String tableName,int i) throws IOException {
 		// TODO Auto-generated method stub
 		Job job=new Job(conf,tableName);
 		conf.set("Iteration", Integer.toString(i));
@@ -40,7 +38,7 @@ public class NpiInfluenceJob {
 		  tableName,        // input HBase table name
 		  scan,             // Scan instance to control CF and attribute selection
 		  InputMapper.class,   // mapper
-		  Text.class,             // mapper output key 
+		  ImmutableBytesWritable.class,             // mapper output key 
 		  DoubleWritable.class,             // mapper output value
 		  job, false);
 		TableMapReduceUtil.initTableReducerJob(
